@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Investigator Sheet</title>
+<meta name="theme-color" content="#12100e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Investigator">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+:root{
+  --bg:#12100e; --panel:#1c1915; --panel2:#25211b; --line:#3a3328; --ink:#e8dfcc; --mute:#9a8f78;
+  --gold:#c9a24a; --red:#b5483a; --green:#6f9a5a; --blue:#5b86a6; --violet:#8a6fb0;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Georgia,'Times New Roman',serif}
+body{padding:max(12px,env(safe-area-inset-top)) 12px max(24px,env(safe-area-inset-bottom));max-width:620px;margin:0 auto}
+h1{font-size:19px;letter-spacing:.06em;text-transform:uppercase;margin:4px 0 2px;color:var(--gold)}
+.sub{color:var(--mute);font-size:13px;margin:0 0 10px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:0 0 8px;font-weight:600}
+label.f{display:block;font-size:12px;color:var(--mute);margin:8px 0 3px;letter-spacing:.04em;text-transform:uppercase}
+select,input[type=text],input[type=number],textarea{
+  width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;
+  padding:10px;font:inherit;font-size:16px}
+textarea{min-height:64px;resize:vertical}
+button{touch-action:manipulation;-webkit-user-select:none;user-select:none;font:inherit;cursor:pointer;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-height:44px}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--gold);color:#1a1407;border-color:var(--gold);font-weight:700}
+button.danger{border-color:var(--red);color:#e7a39a}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{flex:1}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.tabs button{flex:0 0 auto;min-height:38px;padding:6px 12px;font-size:14px}
+.tabs button.on{border-color:var(--gold);color:var(--gold)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center}
+.stat .nm{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.stat .val{font-size:34px;font-weight:700;line-height:1.1;margin:2px 0}
+.stat .ctl{display:flex;gap:6px;justify-content:center}
+.stat .ctl button{min-width:44px;padding:0;font-size:22px;line-height:1}
+.stat .st{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px;font-size:11px;color:var(--mute)}
+.stat .st input{width:56px;padding:4px;text-align:center;font-size:16px}
+.c-wil .val{color:var(--violet)} .c-int .val{color:var(--blue)} .c-cmb .val{color:var(--red)}
+.c-hp .val{color:var(--red)} .c-san .val{color:var(--blue)} .c-doom .val{color:var(--red)}
+.c-res .val{color:var(--gold)} .c-clu .val{color:var(--green)}
+.hint{font-size:12px;color:var(--mute);margin:6px 0 0}
+/* dice */
+.dicebar{display:flex;gap:8px}
+.dicebar button{flex:1;min-height:56px;font-size:17px}
+.dice{display:flex;gap:14px;justify-content:center;margin:14px 0 6px;min-height:84px}
+.die{width:78px;height:78px;border-radius:14px;background:#efe6d2;color:#1a1407;font-size:44px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #8c7f60,0 6px 14px rgba(0,0,0,.5)}
+.die.roll{animation:tumble .45s ease-out}
+@keyframes tumble{0%{transform:rotate(-200deg) scale(.6);opacity:.3}70%{transform:rotate(12deg) scale(1.08)}100%{transform:none;opacity:1}}
+.res{text-align:center;font-size:15px;min-height:48px}
+.res b{font-size:20px}
+.pass{color:var(--green)} .fail{color:var(--red)}
+.hist{font-size:13px;color:var(--mute);margin:8px 0 0;max-height:150px;overflow:auto}
+.hist div{padding:3px 0;border-top:1px solid var(--line)}
+.item{display:flex;gap:6px;margin:6px 0}
+.item input{flex:1}
+.item button{flex:0 0 44px;padding:0}
+.footer{color:var(--mute);font-size:12px;text-align:center;margin-top:14px}
+@media (prefers-reduced-motion:reduce){.die.roll{animation:none}}
+</style>
+</head>
+<body>
+<h1>Investigator Sheet</h1>
+<p class="sub">Arkham Horror Investigators Gamebooks: The Darkness Over Arkham</p>
+
+<section>
+  <h2>Sheets</h2>
+  <div class="tabs" id="tabs"></div>
+  <div class="row" style="margin-top:8px">
+    <button id="newBtn">+ New sheet</button>
+    <button id="delBtn" class="danger">Delete this sheet</button>
+  </div>
+  <div id="delConfirm" class="hint" style="display:none">
+    Tap again to confirm delete: <button id="delYes" class="danger" style="min-height:36px;padding:4px 10px">Delete</button>
+    <button id="delNo" style="min-height:36px;padding:4px 10px">Cancel</button>
+  </div>
+</section>
+
+<section>
+  <h2>Investigator</h2>
+  <label class="f" for="inv">Pick from the publisher's roster</label>
+  <select id="inv"></select>
+  <label class="f" for="pname">Name on this sheet</label>
+  <input type="text" id="pname" placeholder="e.g. Agnes Baker">
+  <label class="f" for="adv">Adventure / book</label>
+  <input type="text" id="adv" placeholder="The Darkness Over Arkham">
+  <p class="hint">Agnes Baker, Rex Murphy, Nathaniel Cho and Stella Clark fill in automatically from the publisher's sheets (picking one replaces the stats, ability, weakness and item on this sheet). For other investigators, enter the "start" values from their sheet.</p>
+</section>
+
+<section>
+  <h2>Skills</h2>
+  <div class="grid3" id="skills"></div>
+</section>
+
+<section>
+  <h2>Health and Sanity</h2>
+  <div class="grid2" id="vitals"></div>
+  <div class="row" style="margin-top:10px">
+    <button id="resetBtn">Reset skills, Health, Sanity to start</button>
+  </div>
+  <p class="hint">The series resets these to the investigator's starting values after each adventure. Health and Sanity can go below 0: the roller then subtracts that amount from Combat (Health) or Willpower (Sanity), as printed on the sheet.</p>
+</section>
+
+<section>
+  <h2>Resources, Clues, Doom</h2>
+  <div class="grid3" id="tokens"></div>
+</section>
+
+<section>
+  <h2>Ability, weakness, item</h2>
+  <label class="f" for="ability">Major ability</label>
+  <textarea id="ability"></textarea>
+  <label class="f" for="weak">Major weakness</label>
+  <textarea id="weak"></textarea>
+  <label class="f" for="sitem">Starting item</label>
+  <input type="text" id="sitem">
+</section>
+
+<section>
+  <h2>Items and allies</h2>
+  <div id="items"></div>
+  <button id="addItem" style="margin-top:6px">+ Add item or ally</button>
+</section>
+
+<section>
+  <h2>Notes</h2>
+  <textarea id="notes" style="min-height:110px" placeholder="Section numbers visited, codes, keywords, story flags..."></textarea>
+</section>
+
+<section id="dicesec">
+  <h2>Dice</h2>
+  <div class="grid2">
+    <div>
+      <label class="f" for="addskill">Add skill</label>
+      <select id="addskill">
+        <option value="">None</option>
+        <option value="wil">Willpower</option>
+        <option value="int">Intellect</option>
+        <option value="cmb">Combat</option>
+      </select>
+    </div>
+    <div>
+      <label class="f" for="target">Target number (optional)</label>
+      <input type="number" id="target" inputmode="numeric" placeholder="e.g. 8">
+    </div>
+  </div>
+  <div class="dicebar" style="margin-top:10px">
+    <button class="primary" id="roll1">Roll 1 die</button>
+    <button class="primary" id="roll2">Roll 2 dice</button>
+  </div>
+  <div class="dice" id="dice" aria-live="polite"></div>
+  <div class="res" id="res">Tap a button to roll d6.</div>
+  <p class="hint">With 2 dice, both dice are shown with the sum and the highest die, each plus the chosen skill. Use whichever the book's instruction calls for.</p>
+  <div class="hist" id="hist"></div>
+  <button id="clearHist" style="margin-top:8px;min-height:36px;padding:4px 10px;font-size:14px">Clear roll log</button>
+</section>
+
+<p class="footer">Saved on this device only (clearing Safari website data erases it). Roster from arkhamhorror.com and aconytebooks.com.</p>
+
+<script>
+(function(){
+  var KEY='ah_gb_sheets_v1';
+  var ROSTER=[
+    ['','Custom or not listed'],
+    ['G:The Darkness Over Arkham',null],
+    ['Agnes Baker|The Waitress','Agnes Baker (Waitress)'],
+    ['Rex Murphy|The Reporter','Rex Murphy (Reporter)'],
+    ['Nathaniel Cho|The Boxer','Nathaniel Cho (Boxer)'],
+    ['G:The Tides of Innsmouth',null],
+    ['Silas Marsh','Silas Marsh'],
+    ['Marion Tavares','Marion Tavares'],
+    ['Kōhaku Narukami','Kōhaku Narukami'],
+    ['G:The Kingsport Metamorphosis',null],
+    ['Jacqueline Fine','Jacqueline Fine'],
+    ['Lucius Galloway','Lucius Galloway'],
+    ['Lola Hayes','Lola Hayes'],
+    ['G:Downloadable investigators',null],
+    ['Stella Clark|The Letter Carrier','Stella Clark (Letter Carrier)'],
+    ['Amanda Sharpe','Amanda Sharpe'],
+    ["Skids O'Toole","Skids O'Toole"],
+    ['George Barnaby','George Barnaby'],
+    ['Sister Mary','Sister Mary'],
+    ['Dexter Drake','Dexter Drake']
+  ];
+  // Transcribed from the publisher's Print investigator sheets (Fantasy Flight Games, 2024).
+  var PRESETS={
+    'Agnes Baker|The Waitress':{wil:5,int:2,cmb:2,hp:6,san:8,clu:0,
+      sitem:'HEIRLOOM OF HYPERBOREA: If you succeed in a test using your WILLPOWER, gain +1 RESOURCE.',
+      ability:'SORCERER: Once per adventure, you may use your WILLPOWER instead of your COMBAT in a fight or test.\nOther abilities: MYSTIC, SORCERY, ARCANE STUDIES',
+      weak:'DARK MEMORIES: Each time you spend a CLUE, roll a dice. On a roll of a 1, Agnes loses -1 SANITY.\nOther weaknesses: HAUNTED'},
+    'Rex Murphy|The Reporter':{wil:3,int:4,cmb:2,hp:6,san:9,clu:1,
+      sitem:"REPORTER'S NOTEBOOK: You begin with +1 CLUE.",
+      ability:'REPORTER: If you roll a 6 while using your INTELLECT, gain +1 CLUE.\nOther abilities: SEEKER',
+      weak:"REX'S CURSE: If you roll a double when using your INTELLECT or WILLPOWER, treat the score on each dice as a 1.\nOther weaknesses: CURSED"},
+    'Nathaniel Cho|The Boxer':{wil:3,int:2,cmb:5,hp:9,san:6,clu:0,
+      sitem:'HIDDEN WEAPON: Once per adventure, you may add +3 to your COMBAT.',
+      ability:'BOXER: If you roll a 6 while using your COMBAT, add +1 to your total score. (If you are rolling more than one dice, add +1 for each 6 you roll.)\nOther abilities: GUARDIAN, FIGHTER, TOUGH',
+      weak:'HUNTED BY THE MOB: Each time you gain a RESOURCE, roll a die. If the score is below your current number of RESOURCE, do not gain a RESOURCE.\nOther weaknesses: CRIMINAL'},
+    'Stella Clark|The Letter Carrier':{wil:3,int:2,cmb:3,hp:8,san:8,clu:0,
+      sitem:'MAILBAG: Whenever you gain an ITEM, if you do not already gain 1 RESOURCE, gain 1 RESOURCE.',
+      ability:'NOR GLOOM OF NIGHT: When you roll less than the required score in any test using your WILLPOWER, choose to gain 1 RESOURCE, 1 HEALTH or 1 SANITY. You may not increase your HEALTH or SANITY above their starting level using this ability.\nOther abilities: SURVIVOR, TOUGH, CIVIC',
+      weak:'CALLED BY THE MISTS: Whenever you lose SANITY, roll one dice. (If you are in Kingsport, roll two dice and pick the highest.) If the score is higher than your current SANITY, lose 1 RESOURCE.\nOther weaknesses: HAUNTED'}
+  };
+  var SKILLS=[['wil','Willpower','c-wil'],['int','Intellect','c-int'],['cmb','Combat','c-cmb']];
+  var VITALS=[['hp','Health','c-hp'],['san','Sanity','c-san']];
+  var TOKENS=[['res','Resources','c-res'],['clu','Clues','c-clu'],['doom','Doom','c-doom']];
+  var ALLSTATS=SKILLS.concat(VITALS,TOKENS);
+
+  var $=function(id){return document.getElementById(id)};
+  var store={sheets:[],cur:null,log:[]};
+  var memOnly=false;
+
+  function load(){
+    try{var s=localStorage.getItem(KEY);if(s){var o=JSON.parse(s);if(o&&o.sheets)store=o;}}catch(e){memOnly=true}
+    if(!store.log)store.log=[];
+    if(!store.sheets.length){store.sheets.push(blank());store.cur=store.sheets[0].id}
+    if(!cur())store.cur=store.sheets[0].id;
+  }
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){memOnly=true}}
+  function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+  function blank(){
+    var s={id:uid(),inv:'',name:'',adv:'The Darkness Over Arkham',ability:'',weak:'',sitem:'',notes:'',items:[],v:{},start:{}};
+    ALLSTATS.forEach(function(a){s.v[a[0]]=0});
+    return s;
+  }
+  function cur(){return store.sheets.filter(function(s){return s.id===store.cur})[0]}
+
+  // ---------- render ----------
+  function buildRoster(){
+    var sel=$('inv'),grp=null;sel.innerHTML='';
+    ROSTER.forEach(function(r){
+      if(r[0].indexOf('G:')===0){grp=document.createElement('optgroup');grp.label=r[0].slice(2);sel.appendChild(grp);return}
+      var o=document.createElement('option');o.value=r[0];o.textContent=r[1];
+      (r[0]===''?sel:(grp||sel)).appendChild(o);
+    });
+  }
+  function renderTabs(){
+    var t=$('tabs');t.innerHTML='';
+    store.sheets.forEach(function(s,i){
+      var b=document.createElement('button');
+      b.textContent=s.name||('Sheet '+(i+1));
+      if(s.id===store.cur)b.className='on';
+      b.onclick=function(){store.cur=s.id;save();renderAll()};
+      t.appendChild(b);
+    });
+  }
+  function stepper(group,host,cls){
+    var s=cur();
+    group.forEach(function(g){
+      var k=g[0],d=document.createElement('div');
+      d.className='stat '+g[2];
+      var startable=(k!=='res'&&k!=='clu'&&k!=='doom');
+      d.innerHTML='<div class="nm">'+g[1]+'</div><div class="val" id="val_'+k+'">'+s.v[k]+'</div>'+
+        '<div class="ctl"><button aria-label="minus '+g[1]+'" data-k="'+k+'" data-d="-1">&minus;</button>'+
+        '<button aria-label="plus '+g[1]+'" data-k="'+k+'" data-d="1">+</button></div>'+
+        (startable?'<div class="st">start <input type="number" inputmode="numeric" data-start="'+k+'" value="'+(s.start[k]==null?'':s.start[k])+'" placeholder="?"></div>':'');
+      host.appendChild(d);
+    });
+  }
+  function renderStats(){
+    ['skills','vitals','tokens'].forEach(function(id){$(id).innerHTML=''});
+    stepper(SKILLS,$('skills'));stepper(VITALS,$('vitals'));stepper(TOKENS,$('tokens'));
+  }
+  function renderItems(){
+    var s=cur(),h=$('items');h.innerHTML='';
+    s.items.forEach(function(txt,i){
+      var d=document.createElement('div');d.className='item';
+      var inp=document.createElement('input');inp.type='text';inp.value=txt;inp.placeholder='Item or ally';
+      inp.oninput=function(){s.items[i]=inp.value;save()};
+      var x=document.createElement('button');x.innerHTML='&times;';x.setAttribute('aria-label','Remove');
+      x.onclick=function(){s.items.splice(i,1);save();renderItems()};
+      d.appendChild(inp);d.appendChild(x);h.appendChild(d);
+    });
+  }
+  function renderFields(){
+    var s=cur();
+    $('inv').value=s.inv||'';
+    if($('inv').value!==(s.inv||''))$('inv').value='';
+    $('pname').value=s.name;$('adv').value=s.adv;
+    $('ability').value=s.ability;$('weak').value=s.weak;$('sitem').value=s.sitem;$('notes').value=s.notes;
+  }
+  function renderHist(){
+    var h=$('hist');h.innerHTML='';
+    store.log.slice(0,15).forEach(function(l){var d=document.createElement('div');d.textContent=l;h.appendChild(d)});
+  }
+  function renderAll(){renderTabs();renderFields();renderStats();renderItems();renderHist();$('delConfirm').style.display='none'}
+
+  // ---------- events ----------
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button[data-k]');if(!b)return;
+    var s=cur(),k=b.getAttribute('data-k'),d=parseInt(b.getAttribute('data-d'),10);
+    s.v[k]=(s.v[k]||0)+d;
+    if(k==='res'||k==='clu'||k==='doom')s.v[k]=Math.max(0,s.v[k]);
+    $('val_'+k).textContent=s.v[k];save();
+  });
+  document.addEventListener('input',function(e){
+    var k=e.target.getAttribute&&e.target.getAttribute('data-start');if(!k)return;
+    var v=e.target.value;cur().start[k]=v===''?null:parseInt(v,10);save();
+  });
+  $('inv').onchange=function(){
+    var s=cur(),v=$('inv').value;s.inv=v;
+    if(v){var nm=v.split('|')[0];if(!s.name||ROSTER.some(function(r){return r[0]&&r[0].split('|')[0]===s.name})){s.name=nm;$('pname').value=nm}}
+    var p=PRESETS[v];
+    if(p){
+      ['wil','int','cmb','hp','san'].forEach(function(k){s.start[k]=p[k];s.v[k]=p[k]});
+      s.v.clu=p.clu;s.v.res=0;s.v.doom=0;
+      s.sitem=p.sitem;s.ability=p.ability;s.weak=p.weak;
+      save();renderAll();return;
+    }
+    save();renderTabs();
+  };
+  $('pname').oninput=function(){cur().name=$('pname').value;save();renderTabs()};
+  [['adv','adv'],['ability','ability'],['weak','weak'],['sitem','sitem'],['notes','notes']].forEach(function(p){
+    $(p[0]).oninput=function(){cur()[p[1]]=$(p[0]).value;save()};
+  });
+  $('newBtn').onclick=function(){var s=blank();store.sheets.push(s);store.cur=s.id;save();renderAll()};
+  $('delBtn').onclick=function(){$('delConfirm').style.display='block'};
+  $('delNo').onclick=function(){$('delConfirm').style.display='none'};
+  $('delYes').onclick=function(){
+    store.sheets=store.sheets.filter(function(s){return s.id!==store.cur});
+    if(!store.sheets.length)store.sheets.push(blank());
+    store.cur=store.sheets[0].id;save();renderAll();
+  };
+  $('addItem').onclick=function(){cur().items.push('');save();renderItems();
+    var ins=$('items').querySelectorAll('input');if(ins.length)ins[ins.length-1].focus()};
+  var resetArm=false;
+  $('resetBtn').onclick=function(){
+    var b=$('resetBtn');
+    if(!resetArm){resetArm=true;b.textContent='Tap again to confirm reset';setTimeout(function(){resetArm=false;b.textContent='Reset skills, Health, Sanity to start'},3500);return}
+    var s=cur();
+    SKILLS.concat(VITALS).forEach(function(a){if(s.start[a[0]]!=null)s.v[a[0]]=s.start[a[0]]});
+    resetArm=false;b.textContent='Reset skills, Health, Sanity to start';save();renderStats();
+  };
+
+  // ---------- dice ----------
+  function d6(){
+    var a=new Uint8Array(1);
+    if(window.crypto&&crypto.getRandomValues){
+      do{crypto.getRandomValues(a)}while(a[0]>=252);
+      return (a[0]%6)+1;
+    }
+    return Math.floor(Math.random()*6)+1;
+  }
+  function roll(n){
+    var vals=[];for(var i=0;i<n;i++)vals.push(d6());
+    var dd=$('dice');dd.innerHTML='';
+    vals.forEach(function(v){var e=document.createElement('div');e.className='die roll';e.textContent=v;dd.appendChild(e)});
+    var sk=$('addskill').value,s=cur(),base=sk?(s.v[sk]||0):0;
+    var skName=sk?SKILLS.filter(function(a){return a[0]===sk})[0][1]:'';
+    // Sheet rule: Health below 0 reduces COMBAT, Sanity below 0 reduces WILLPOWER by that amount.
+    var pen=0,penTxt='';
+    if(sk==='cmb'&&(s.v.hp||0)<0){pen=s.v.hp;penTxt=' - '+(-pen)+' (Health below 0)'}
+    if(sk==='wil'&&(s.v.san||0)<0){pen=s.v.san;penTxt=' - '+(-pen)+' (Sanity below 0)'}
+    var bonus=base+pen;
+    var tRaw=$('target').value,t=tRaw===''?null:parseInt(tRaw,10);
+    function verdict(total){
+      if(t==null||isNaN(t))return '';
+      return total>=t?' <span class="pass">Pass</span>':' <span class="fail">Fail</span>';
+    }
+    var html='',logTxt='';
+    var bonusTxt=sk?(' + '+skName+' '+base+penTxt):'';
+    if(n===1){
+      var tot=vals[0]+bonus;
+      html='<b>'+tot+'</b>'+verdict(tot)+'<br>'+vals[0]+bonusTxt+(t!=null&&!isNaN(t)?' vs '+t:'');
+      logTxt='1d6: '+vals[0]+bonusTxt+' = '+tot+(t!=null&&!isNaN(t)?(tot>=t?' (pass vs '+t+')':' (fail vs '+t+')'):'');
+    }else{
+      var sum=vals[0]+vals[1],hi=Math.max(vals[0],vals[1]);
+      html='Sum: <b>'+(sum+bonus)+'</b>'+verdict(sum+bonus)+' <span class="hint">('+sum+bonusTxt+')</span><br>'+
+           'Highest: <b>'+(hi+bonus)+'</b>'+verdict(hi+bonus)+' <span class="hint">('+hi+bonusTxt+')</span>'+
+           (t!=null&&!isNaN(t)?'<br><span class="hint">vs '+t+'</span>':'');
+      logTxt='2d6: '+vals[0]+' + '+vals[1]+' = '+sum+', highest '+hi+bonusTxt+
+             (t!=null&&!isNaN(t)?' | vs '+t+': sum '+(sum+bonus>=t?'pass':'fail')+', highest '+(hi+bonus>=t?'pass':'fail'):'');
+    }
+    $('res').innerHTML=html;
+    store.log.unshift(logTxt);store.log=store.log.slice(0,40);save();renderHist();
+  }
+  $('roll1').onclick=function(){roll(1)};
+  $('roll2').onclick=function(){roll(2)};
+  $('clearHist').onclick=function(){store.log=[];save();renderHist()};
+
+  // ---------- init ----------
+  buildRoster();load();renderAll();
+  if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+  if(memOnly){var p=document.createElement('p');p.className='hint';p.textContent='Storage is unavailable here, so this sheet will not be kept after you close the page.';document.body.insertBefore(p,document.body.children[2])}
+})();
+</script>
+</body>
+</html>
