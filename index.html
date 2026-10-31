@@ -14,22 +14,28 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <style>
 :root{
-  --bg:#12100e; --panel:#1c1915; --panel2:#25211b; --line:#3a3328; --ink:#e8dfcc; --mute:#9a8f78;
-  --gold:#c9a24a; --red:#b5483a; --green:#6f9a5a; --blue:#5b86a6; --violet:#8a6fb0;
+  --bg:#12100e; --panel:#1c1915; --panel2:#25211b; --line:#3a3328; --ink:#e8dfcc; --mute:#b3a78d;
+  --gold:#d4ad55; --red:#b5483a; --green:#6f9a5a; --blue:#5b86a6; --violet:#8a6fb0;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Georgia,'Times New Roman',serif}
-body{padding:max(12px,env(safe-area-inset-top)) 12px max(24px,env(safe-area-inset-bottom));max-width:620px;margin:0 auto}
+body{padding:max(12px,env(safe-area-inset-top)) 12px 190px;max-width:620px;margin:0 auto}
+label.f,.stat .nm,.hint,.tabs button,.dock select,.dock input,.dock button,summary{font-family:-apple-system,system-ui,'Segoe UI',Roboto,sans-serif}
 h1{font-size:19px;letter-spacing:.06em;text-transform:uppercase;margin:4px 0 2px;color:var(--gold)}
 .sub{color:var(--mute);font-size:13px;margin:0 0 10px}
-section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+section,details.sec{background:linear-gradient(180deg,#1f1c17,#1a1713);border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+details.sec>summary{list-style:none;cursor:pointer;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:600;display:flex;justify-content:space-between;align-items:center;min-height:28px}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:'\25BE';font-size:16px;transition:transform .15s}
+details.sec:not([open])>summary::after{transform:rotate(-90deg)}
+details.sec[open]>summary{margin-bottom:6px}
 h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:0 0 8px;font-weight:600}
 label.f{display:block;font-size:12px;color:var(--mute);margin:8px 0 3px;letter-spacing:.04em;text-transform:uppercase}
 select,input[type=text],input[type=number],textarea{
   width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;
   padding:10px;font:inherit;font-size:16px}
-textarea{min-height:64px;resize:vertical}
-button{touch-action:manipulation;-webkit-user-select:none;user-select:none;font:inherit;cursor:pointer;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-height:44px}
+textarea{min-height:48px;resize:none;overflow:hidden;line-height:1.35;display:block}
+button{font-family:-apple-system,system-ui,'Segoe UI',Roboto,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;font:inherit;cursor:pointer;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-height:44px}
 button:active{transform:translateY(1px)}
 button.primary{background:var(--gold);color:#1a1407;border-color:var(--gold);font-weight:700}
 button.danger{border-color:var(--red);color:#e7a39a}
@@ -38,35 +44,43 @@ button.danger{border-color:var(--red);color:#e7a39a}
 .tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
 .tabs button{flex:0 0 auto;min-height:38px;padding:6px 12px;font-size:14px}
 .tabs button.on{border-color:var(--gold);color:var(--gold)}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.grid3>*,.grid2>*{min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-top:3px solid var(--c,var(--line));border-radius:12px;padding:8px 6px 10px;text-align:center}
 .stat .nm{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
-.stat .val{font-size:34px;font-weight:700;line-height:1.1;margin:2px 0}
+.stat .val{font-size:40px;font-weight:700;line-height:1.1;margin:2px 0;color:var(--c,var(--ink));font-variant-numeric:tabular-nums}
+.stat .bar{height:5px;border-radius:3px;background:#0f0d0b;margin:2px 10px 6px;overflow:hidden}
+.stat .bar i{display:block;height:100%;background:var(--c);border-radius:3px;transition:width .15s}
 .stat .ctl{display:flex;gap:6px;justify-content:center}
-.stat .ctl button{min-width:44px;padding:0;font-size:22px;line-height:1}
+.grid3 .stat .ctl button{min-width:0;flex:1;max-width:48px}
+.stat .ctl button{min-width:48px;min-height:48px;padding:0;font-size:24px;line-height:1;background:#2d2820}
 .stat .st{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px;font-size:11px;color:var(--mute)}
-.stat .st input{width:56px;padding:4px;text-align:center;font-size:16px}
-.c-wil .val{color:var(--violet)} .c-int .val{color:var(--blue)} .c-cmb .val{color:var(--red)}
-.c-hp .val{color:var(--red)} .c-san .val{color:var(--blue)} .c-doom .val{color:var(--red)}
-.c-res .val{color:var(--gold)} .c-clu .val{color:var(--green)}
+.stat .st input{width:44px;padding:4px;text-align:center;font-size:16px}
+.c-wil{--c:var(--violet)} .c-int{--c:var(--blue)} .c-cmb{--c:var(--red)}
+.c-hp{--c:var(--red)} .c-san{--c:var(--blue)} .c-doom{--c:#d0603f}
+.c-res{--c:var(--gold)} .c-clu{--c:var(--green)}
 .hint{font-size:12px;color:var(--mute);margin:6px 0 0}
 /* dice */
-.dicebar{display:flex;gap:8px}
-.dicebar button{flex:1;min-height:56px;font-size:17px}
-.dice{display:flex;gap:14px;justify-content:center;margin:14px 0 6px;min-height:84px}
-.die{width:78px;height:78px;border-radius:14px;background:#efe6d2;color:#1a1407;font-size:44px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #8c7f60,0 6px 14px rgba(0,0,0,.5)}
+.dice{display:flex;gap:8px;flex:0 0 auto;min-width:0}
+.die{width:46px;height:46px;border-radius:9px;background:#efe6d2;color:#1a1407;font-size:27px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 #8c7f60,0 4px 8px rgba(0,0,0,.5)}
 .die.roll{animation:tumble .45s ease-out}
 @keyframes tumble{0%{transform:rotate(-200deg) scale(.6);opacity:.3}70%{transform:rotate(12deg) scale(1.08)}100%{transform:none;opacity:1}}
-.res{text-align:center;font-size:15px;min-height:48px}
-.res b{font-size:20px}
+.res{font-size:14px;line-height:1.35;min-height:46px;flex:1;min-width:0;display:block;align-self:center;font-family:-apple-system,system-ui,sans-serif}
+.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:620px;z-index:10;background:rgba(18,16,14,.97);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid var(--gold);padding:8px 12px max(10px,env(safe-area-inset-bottom))}
+.dock-top{display:flex;gap:10px;align-items:center;min-height:50px}
+.dock-ctl{display:grid;grid-template-columns:1.25fr .9fr 1fr 1fr;gap:6px;margin-top:8px}
+.dock-ctl select,.dock-ctl input{padding:8px 6px;min-height:46px}
+.dock-ctl button{min-height:46px;padding:0 6px;font-size:16px;font-weight:700}
+.res b{font-size:19px}
 .pass{color:var(--green)} .fail{color:var(--red)}
-.hist{font-size:13px;color:var(--mute);margin:8px 0 0;max-height:150px;overflow:auto}
+.hist{font-size:13px;color:var(--mute);margin:8px 0 0;max-height:220px;overflow:auto;font-family:-apple-system,system-ui,sans-serif}
 .hist div{padding:3px 0;border-top:1px solid var(--line)}
 .item{display:flex;gap:6px;margin:6px 0}
 .item input{flex:1}
 .item button{flex:0 0 44px;padding:0}
 .footer{color:var(--mute);font-size:12px;text-align:center;margin-top:14px}
+button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'Segoe UI',Roboto,sans-serif}
 @media (prefers-reduced-motion:reduce){.die.roll{animation:none}}
 </style>
 </head>
@@ -117,56 +131,53 @@ button.danger{border-color:var(--red);color:#e7a39a}
   <div class="grid3" id="tokens"></div>
 </section>
 
-<section>
-  <h2>Ability, weakness, item</h2>
+<details class="sec" open>
+  <summary>Ability, weakness, item</summary>
   <label class="f" for="ability">Major ability</label>
   <textarea id="ability"></textarea>
   <label class="f" for="weak">Major weakness</label>
   <textarea id="weak"></textarea>
   <label class="f" for="sitem">Starting item</label>
-  <input type="text" id="sitem">
-</section>
+  <textarea id="sitem"></textarea>
+</details>
 
-<section>
-  <h2>Items and allies</h2>
+<details class="sec" open>
+  <summary>Items and allies</summary>
   <div id="items"></div>
   <button id="addItem" style="margin-top:6px">+ Add item or ally</button>
-</section>
+</details>
 
-<section>
-  <h2>Notes</h2>
+<details class="sec" open>
+  <summary>Notes</summary>
   <textarea id="notes" style="min-height:110px" placeholder="Section numbers visited, codes, keywords, story flags..."></textarea>
-</section>
+</details>
 
-<section id="dicesec">
-  <h2>Dice</h2>
-  <div class="grid2">
-    <div>
-      <label class="f" for="addskill">Add skill</label>
-      <select id="addskill">
-        <option value="">None</option>
-        <option value="wil">Willpower</option>
-        <option value="int">Intellect</option>
-        <option value="cmb">Combat</option>
-      </select>
-    </div>
-    <div>
-      <label class="f" for="target">Target number (optional)</label>
-      <input type="number" id="target" inputmode="numeric" placeholder="e.g. 8">
-    </div>
-  </div>
-  <div class="dicebar" style="margin-top:10px">
-    <button class="primary" id="roll1">Roll 1 die</button>
-    <button class="primary" id="roll2">Roll 2 dice</button>
-  </div>
-  <div class="dice" id="dice" aria-live="polite"></div>
-  <div class="res" id="res">Tap a button to roll d6.</div>
-  <p class="hint">With 2 dice, both dice are shown with the sum and the highest die, each plus the chosen skill. Use whichever the book's instruction calls for.</p>
+<details class="sec" id="dicesec">
+  <summary>Roll log</summary>
+  <p class="hint">With 2 dice, the sum and the highest die are both shown, each plus the chosen skill. Use whichever the book's instruction calls for.</p>
   <div class="hist" id="hist"></div>
   <button id="clearHist" style="margin-top:8px;min-height:36px;padding:4px 10px;font-size:14px">Clear roll log</button>
-</section>
+</details>
 
 <p class="footer">Saved on this device only (clearing Safari website data erases it). Roster and sheets from arkhamhorror.com and aconytebooks.com. * = start values not preloaded.</p>
+
+<div class="dock" id="dock">
+  <div class="dock-top">
+    <div class="dice" id="dice" aria-live="polite"></div>
+    <div class="res" id="res">Tap Roll 1 or Roll 2 to throw d6.</div>
+  </div>
+  <div class="dock-ctl">
+    <select id="addskill" aria-label="Add skill">
+      <option value="">No skill</option>
+      <option value="wil">+ Will</option>
+      <option value="int">+ Int</option>
+      <option value="cmb">+ Cmb</option>
+    </select>
+    <input type="number" id="target" inputmode="numeric" placeholder="Target" aria-label="Target number">
+    <button class="primary" id="roll1">Roll 1</button>
+    <button class="primary" id="roll2">Roll 2</button>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -269,7 +280,7 @@ button.danger{border-color:var(--red);color:#e7a39a}
       var k=g[0],d=document.createElement('div');
       d.className='stat '+g[2];
       var startable=(k!=='res'&&k!=='clu'&&k!=='doom');
-      d.innerHTML='<div class="nm">'+g[1]+'</div><div class="val" id="val_'+k+'">'+s.v[k]+'</div>'+
+      d.innerHTML='<div class="nm">'+g[1]+'</div><div class="val" id="val_'+k+'">'+s.v[k]+'</div>'+((k==='hp'||k==='san')?'<div class="bar"><i id="bar_'+k+'"></i></div>':'')+
         '<div class="ctl"><button aria-label="minus '+g[1]+'" data-k="'+k+'" data-d="-1">&minus;</button>'+
         '<button aria-label="plus '+g[1]+'" data-k="'+k+'" data-d="1">+</button></div>'+
         (startable?'<div class="st">start <input type="number" inputmode="numeric" data-start="'+k+'" value="'+(s.start[k]==null?'':s.start[k])+'" placeholder="?"></div>':'');
@@ -308,7 +319,18 @@ button.danger{border-color:var(--red);color:#e7a39a}
     if(!v){n.textContent='Pick an investigator to load their sheet. Starting values load automatically for those without a * mark.';return}
     n.textContent=PRESETS[v]?'Start values, ability, weakness and item were loaded from the publisher\'s sheet. Picking a different investigator replaces them.':'* Not preloaded yet: type this investigator\'s start values, ability, weakness and item from their sheet.';
   }
-  function renderAll(){renderTabs();renderFields();renderStats();renderItems();renderHist();$('delConfirm').style.display='none'}
+  function autosize(el){el.style.height='auto';el.style.height=(el.scrollHeight+2)+'px'}
+  function autosizeAll(){document.querySelectorAll('textarea').forEach(autosize)}
+  function bars(){
+    var s=cur();
+    ['hp','san'].forEach(function(k){
+      var el=$('bar_'+k);if(!el)return;
+      var st=s.start[k],v=s.v[k]||0;
+      el.parentNode.style.visibility=(st>0)?'visible':'hidden';
+      el.style.width=(st>0?Math.max(0,Math.min(100,v/st*100)):0)+'%';
+    });
+  }
+  function renderAll(){renderTabs();renderFields();renderStats();renderItems();renderHist();$('delConfirm').style.display='none';bars();autosizeAll();setTimeout(autosizeAll,60)}
 
   // ---------- events ----------
   document.addEventListener('click',function(e){
@@ -316,11 +338,11 @@ button.danger{border-color:var(--red);color:#e7a39a}
     var s=cur(),k=b.getAttribute('data-k'),d=parseInt(b.getAttribute('data-d'),10);
     s.v[k]=(s.v[k]||0)+d;
     if(k==='res'||k==='clu'||k==='doom')s.v[k]=Math.max(0,s.v[k]);
-    $('val_'+k).textContent=s.v[k];save();
+    $('val_'+k).textContent=s.v[k];save();bars();
   });
   document.addEventListener('input',function(e){
     var k=e.target.getAttribute&&e.target.getAttribute('data-start');if(!k)return;
-    var v=e.target.value;cur().start[k]=v===''?null:parseInt(v,10);save();
+    var v=e.target.value;cur().start[k]=v===''?null:parseInt(v,10);save();bars();
   });
   $('inv').onchange=function(){
     var s=cur(),v=$('inv').value;s.inv=v;
@@ -341,6 +363,8 @@ button.danger{border-color:var(--red);color:#e7a39a}
   [['ability','ability'],['weak','weak'],['sitem','sitem'],['notes','notes']].forEach(function(p){
     $(p[0]).oninput=function(){cur()[p[1]]=$(p[0]).value;save()};
   });
+  document.addEventListener('input',function(e){if(e.target.tagName==='TEXTAREA')autosize(e.target)});
+  document.addEventListener('toggle',function(e){if(e.target.tagName==='DETAILS')autosizeAll()},true);
   $('newBtn').onclick=function(){var s=blank();store.sheets.push(s);store.cur=s.id;save();renderAll()};
   $('delBtn').onclick=function(){$('delConfirm').style.display='block'};
   $('delNo').onclick=function(){$('delConfirm').style.display='none'};
@@ -357,7 +381,7 @@ button.danger{border-color:var(--red);color:#e7a39a}
     if(!resetArm){resetArm=true;b.textContent='Tap again to confirm reset';setTimeout(function(){resetArm=false;b.textContent='Reset skills, Health, Sanity to start'},3500);return}
     var s=cur();
     SKILLS.concat(VITALS).forEach(function(a){if(s.start[a[0]]!=null)s.v[a[0]]=s.start[a[0]]});
-    resetArm=false;b.textContent='Reset skills, Health, Sanity to start';save();renderStats();
+    resetArm=false;b.textContent='Reset skills, Health, Sanity to start';save();renderStats();bars();
   };
 
   // ---------- dice ----------
