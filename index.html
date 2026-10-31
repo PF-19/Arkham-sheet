@@ -89,13 +89,13 @@ button.danger{border-color:var(--red);color:#e7a39a}
 
 <section>
   <h2>Investigator</h2>
-  <label class="f" for="inv">Pick from the publisher's roster</label>
+  <label class="f" for="book">Book you are playing</label>
+  <select id="book"></select>
+  <label class="f" for="inv">Investigator</label>
   <select id="inv"></select>
   <label class="f" for="pname">Name on this sheet</label>
   <input type="text" id="pname" placeholder="e.g. Agnes Baker">
-  <label class="f" for="adv">Adventure / book</label>
-  <input type="text" id="adv" placeholder="The Darkness Over Arkham">
-  <p class="hint">Agnes Baker, Rex Murphy, Nathaniel Cho and Stella Clark fill in automatically from the publisher's sheets (picking one replaces the stats, ability, weakness and item on this sheet). For other investigators, enter the "start" values from their sheet.</p>
+  <p class="hint" id="invnote"></p>
 </section>
 
 <section>
@@ -166,33 +166,36 @@ button.danger{border-color:var(--red);color:#e7a39a}
   <button id="clearHist" style="margin-top:8px;min-height:36px;padding:4px 10px;font-size:14px">Clear roll log</button>
 </section>
 
-<p class="footer">Saved on this device only (clearing Safari website data erases it). Roster from arkhamhorror.com and aconytebooks.com.</p>
+<p class="footer">Saved on this device only (clearing Safari website data erases it). Roster and sheets from arkhamhorror.com and aconytebooks.com. * = start values not preloaded.</p>
 
 <script>
 (function(){
   var KEY='ah_gb_sheets_v1';
-  var ROSTER=[
-    ['','Custom or not listed'],
-    ['G:The Darkness Over Arkham',null],
-    ['Agnes Baker|The Waitress','Agnes Baker (Waitress)'],
-    ['Rex Murphy|The Reporter','Rex Murphy (Reporter)'],
-    ['Nathaniel Cho|The Boxer','Nathaniel Cho (Boxer)'],
-    ['G:The Tides of Innsmouth',null],
-    ['Silas Marsh','Silas Marsh'],
-    ['Marion Tavares','Marion Tavares'],
-    ['Kōhaku Narukami','Kōhaku Narukami'],
-    ['G:The Kingsport Metamorphosis',null],
-    ['Jacqueline Fine','Jacqueline Fine'],
-    ['Lucius Galloway','Lucius Galloway'],
-    ['Lola Hayes','Lola Hayes'],
-    ['G:Downloadable investigators',null],
-    ['Stella Clark|The Letter Carrier','Stella Clark (Letter Carrier)'],
-    ['Amanda Sharpe','Amanda Sharpe'],
-    ["Skids O'Toole","Skids O'Toole"],
-    ['George Barnaby','George Barnaby'],
-    ['Sister Mary','Sister Mary'],
-    ['Dexter Drake','Dexter Drake']
+  var BOOKS=[
+    ['darkness','The Darkness Over Arkham (book 1, 2024)'],
+    ['tides','The Tides of Innsmouth (book 2, 2025)'],
+    ['kingsport','The Kingsport Metamorphosis (book 3, 2026)'],
+    ['other','Other / not listed']
   ];
+  // book: the volume the investigator debuted in; 'dlc' = free download. All investigators work in every book (per the publisher).
+  var INVS=[
+    ['Agnes Baker|The Waitress','Agnes Baker (Waitress)','darkness'],
+    ['Rex Murphy|The Reporter','Rex Murphy (Reporter)','darkness'],
+    ['Nathaniel Cho|The Boxer','Nathaniel Cho (Boxer)','darkness'],
+    ['Silas Marsh','Silas Marsh','tides'],
+    ['Marion Tavares','Marion Tavares','tides'],
+    ['Kōhaku Narukami','Kōhaku Narukami','tides'],
+    ['Jacqueline Fine|The Psychic','Jacqueline Fine (Psychic)','kingsport'],
+    ['Lucius Galloway|The Poet','Lucius Galloway (Poet)','kingsport'],
+    ['Lola Hayes|The Actress','Lola Hayes (Actress)','kingsport'],
+    ['Stella Clark|The Letter Carrier','Stella Clark (Letter Carrier)','dlc'],
+    ['Amanda Sharpe','Amanda Sharpe','dlc'],
+    ["Skids O'Toole","Skids O'Toole",'dlc'],
+    ['George Barnaby','George Barnaby','dlc'],
+    ['Sister Mary|The Nun','Sister Mary (Nun)','dlc'],
+    ['Dexter Drake','Dexter Drake','dlc']
+  ];
+  function bookTitle(id){var r=BOOKS.filter(function(x){return x[0]===id})[0];return r?r[1].replace(/ \(.*\)$/,''):''}
   // Transcribed from the publisher's Print investigator sheets (Fantasy Flight Games, 2024).
   var PRESETS={
     'Agnes Baker|The Waitress':{wil:5,int:2,cmb:2,hp:6,san:8,clu:0,
@@ -224,26 +227,31 @@ button.danger{border-color:var(--red);color:#e7a39a}
   function load(){
     try{var s=localStorage.getItem(KEY);if(s){var o=JSON.parse(s);if(o&&o.sheets)store=o;}}catch(e){memOnly=true}
     if(!store.log)store.log=[];
+    store.sheets.forEach(function(x){if(!x.book)x.book=(x.adv&&/innsmouth/i.test(x.adv))?'tides':(x.adv&&/kingsport/i.test(x.adv))?'kingsport':'darkness'});
     if(!store.sheets.length){store.sheets.push(blank());store.cur=store.sheets[0].id}
     if(!cur())store.cur=store.sheets[0].id;
   }
   function save(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){memOnly=true}}
   function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
   function blank(){
-    var s={id:uid(),inv:'',name:'',adv:'The Darkness Over Arkham',ability:'',weak:'',sitem:'',notes:'',items:[],v:{},start:{}};
+    var s={id:uid(),inv:'',name:'',book:'darkness',ability:'',weak:'',sitem:'',notes:'',items:[],v:{},start:{}};
     ALLSTATS.forEach(function(a){s.v[a[0]]=0});
     return s;
   }
   function cur(){return store.sheets.filter(function(s){return s.id===store.cur})[0]}
 
   // ---------- render ----------
-  function buildRoster(){
-    var sel=$('inv'),grp=null;sel.innerHTML='';
-    ROSTER.forEach(function(r){
-      if(r[0].indexOf('G:')===0){grp=document.createElement('optgroup');grp.label=r[0].slice(2);sel.appendChild(grp);return}
-      var o=document.createElement('option');o.value=r[0];o.textContent=r[1];
-      (r[0]===''?sel:(grp||sel)).appendChild(o);
-    });
+  function buildRoster(book){
+    var sel=$('inv');sel.innerHTML='';
+    var o0=document.createElement('option');o0.value='';o0.textContent='Custom or not listed';sel.appendChild(o0);
+    function opt(r){var o=document.createElement('option');o.value=r[0];o.textContent=r[1]+(PRESETS[r[0]]?'':' *');return o}
+    var mine=INVS.filter(function(r){return r[2]===book});
+    var dlc=INVS.filter(function(r){return r[2]==='dlc'&&r[2]!==book});
+    var rest=INVS.filter(function(r){return r[2]!==book&&r[2]!=='dlc'});
+    function grp(label,list){if(!list.length)return;var g=document.createElement('optgroup');g.label=label;list.forEach(function(r){g.appendChild(opt(r))});sel.appendChild(g)}
+    grp(book==='other'?'Investigators':'Featured in this book',mine);
+    grp('Free download investigators',dlc);
+    grp('From other books (all work in every book)',rest);
   }
   function renderTabs(){
     var t=$('tabs');t.innerHTML='';
@@ -285,14 +293,20 @@ button.danger{border-color:var(--red);color:#e7a39a}
   }
   function renderFields(){
     var s=cur();
+    $('book').value=s.book||'darkness';buildRoster(s.book||'darkness');
     $('inv').value=s.inv||'';
     if($('inv').value!==(s.inv||''))$('inv').value='';
-    $('pname').value=s.name;$('adv').value=s.adv;
+    $('pname').value=s.name;noteFor(s.inv);
     $('ability').value=s.ability;$('weak').value=s.weak;$('sitem').value=s.sitem;$('notes').value=s.notes;
   }
   function renderHist(){
     var h=$('hist');h.innerHTML='';
     store.log.slice(0,15).forEach(function(l){var d=document.createElement('div');d.textContent=l;h.appendChild(d)});
+  }
+  function noteFor(v){
+    var n=$('invnote');
+    if(!v){n.textContent='Pick an investigator to load their sheet. Starting values load automatically for those without a * mark.';return}
+    n.textContent=PRESETS[v]?'Start values, ability, weakness and item were loaded from the publisher\'s sheet. Picking a different investigator replaces them.':'* Not preloaded yet: type this investigator\'s start values, ability, weakness and item from their sheet.';
   }
   function renderAll(){renderTabs();renderFields();renderStats();renderItems();renderHist();$('delConfirm').style.display='none'}
 
@@ -310,7 +324,8 @@ button.danger{border-color:var(--red);color:#e7a39a}
   });
   $('inv').onchange=function(){
     var s=cur(),v=$('inv').value;s.inv=v;
-    if(v){var nm=v.split('|')[0];if(!s.name||ROSTER.some(function(r){return r[0]&&r[0].split('|')[0]===s.name})){s.name=nm;$('pname').value=nm}}
+    if(v){var nm=v.split('|')[0];if(!s.name||INVS.some(function(r){return r[0]&&r[0].split('|')[0]===s.name})){s.name=nm;$('pname').value=nm}}
+    noteFor(v);
     var p=PRESETS[v];
     if(p){
       ['wil','int','cmb','hp','san'].forEach(function(k){s.start[k]=p[k];s.v[k]=p[k]});
@@ -320,8 +335,10 @@ button.danger{border-color:var(--red);color:#e7a39a}
     }
     save();renderTabs();
   };
+  (function(){var bs=$('book');BOOKS.forEach(function(b){var o=document.createElement('option');o.value=b[0];o.textContent=b[1];bs.appendChild(o)});
+    bs.onchange=function(){var s=cur();s.book=bs.value;save();buildRoster(s.book);$('inv').value=s.inv||'';if($('inv').value!==(s.inv||''))$('inv').value=''}})();
   $('pname').oninput=function(){cur().name=$('pname').value;save();renderTabs()};
-  [['adv','adv'],['ability','ability'],['weak','weak'],['sitem','sitem'],['notes','notes']].forEach(function(p){
+  [['ability','ability'],['weak','weak'],['sitem','sitem'],['notes','notes']].forEach(function(p){
     $(p[0]).oninput=function(){cur()[p[1]]=$(p[0]).value;save()};
   });
   $('newBtn').onclick=function(){var s=blank();store.sheets.push(s);store.cur=s.id;save();renderAll()};
@@ -390,7 +407,7 @@ button.danger{border-color:var(--red);color:#e7a39a}
   $('clearHist').onclick=function(){store.log=[];save();renderHist()};
 
   // ---------- init ----------
-  buildRoster();load();renderAll();
+  load();renderAll();
   if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
   if(memOnly){var p=document.createElement('p');p.className='hint';p.textContent='Storage is unavailable here, so this sheet will not be kept after you close the page.';document.body.insertBefore(p,document.body.children[2])}
 })();
