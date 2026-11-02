@@ -173,6 +173,28 @@ button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'S
   <button id="clearHist" style="margin-top:8px;min-height:36px;padding:4px 10px;font-size:14px">Clear roll log</button>
 </details>
 
+<details class="sec" id="xpsec">
+  <summary>Experience dice (between adventures)</summary>
+  <p class="hint">Per the publisher: at the start of your next adventure, roll one die for each star you earned. Each 6 lets you permanently raise one stat. Each 1 forces you to permanently lower one stat. Pick any stats that changed temporarily in the last adventure first.</p>
+  <div class="row" style="margin-top:8px">
+    <input type="number" id="stars" inputmode="numeric" min="0" max="12" placeholder="Stars earned">
+    <button class="primary" id="xpRoll">Roll experience dice</button>
+  </div>
+  <div class="dice" id="xpDice" style="flex-wrap:wrap;margin-top:10px"></div>
+  <div class="res" id="xpRes" style="min-height:24px;margin-top:6px"></div>
+</details>
+
+<details class="sec" id="bksec">
+  <summary>Backup and restore</summary>
+  <p class="hint">Your sheets and item lists live only on this phone. Copy a backup and keep it in Notes or email it to yourself. To restore, paste it below.</p>
+  <div class="row" style="margin-top:8px">
+    <button id="bkCopy">Copy backup</button>
+    <button id="bkRestore" class="danger">Restore from text</button>
+  </div>
+  <textarea id="bk" style="margin-top:8px" placeholder="Backup text appears here after Copy. Paste a backup here to restore."></textarea>
+  <div class="hint" id="bkMsg"></div>
+</details>
+
 <p class="footer">Saved on this device only (clearing Safari website data erases it). Roster and sheets from arkhamhorror.com and aconytebooks.com. * = start values not preloaded.</p>
 
 <div class="dock" id="dock">
@@ -488,6 +510,38 @@ button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'S
   $('roll2').onclick=function(){roll(2)};
   $('clearHist').onclick=function(){store.log=[];save();renderHist()};
 
+  // ---------- experience dice ----------
+  $('xpRoll').onclick=function(){
+    var n=parseInt($('stars').value,10);if(!(n>0)){$('xpRes').textContent='Enter the number of stars first.';return}
+    n=Math.min(n,12);var box=$('xpDice');box.innerHTML='';var up=0,down=0;
+    for(var i=0;i<n;i++){var v=d6();if(v===6)up++;if(v===1)down++;
+      var e=document.createElement('div');e.className='die roll';e.textContent=v;if(v===6)e.style.outline='3px solid #6f9a5a';if(v===1)e.style.outline='3px solid #b5483a';box.appendChild(e)}
+    $('xpRes').innerHTML='Raise '+up+' stat'+(up===1?'':'s')+' by 1 (sixes). Lower '+down+' stat'+(down===1?'':'s')+' by 1 (ones).';
+  };
+  // ---------- backup ----------
+  var bkArm=false;
+  $('bkCopy').onclick=function(){
+    var t=JSON.stringify(store);$('bk').value=t;autosize($('bk'));
+    var done=function(ok){$('bkMsg').textContent=ok?'Copied. Paste it somewhere safe.':'Could not copy automatically. Select the text above and copy it.'};
+    try{navigator.clipboard.writeText(t).then(function(){done(true)},function(){$('bk').select();done(false)})}catch(e){$('bk').select();done(false)}
+  };
+  $('bkRestore').onclick=function(){
+    var b=$('bkRestore');
+    if(!bkArm){bkArm=true;b.textContent='Tap again to replace all data';setTimeout(function(){bkArm=false;b.textContent='Restore from text'},3500);return}
+    bkArm=false;b.textContent='Restore from text';
+    try{
+      var o=JSON.parse($('bk').value);
+      if(!o||!Array.isArray(o.sheets)||!o.sheets.length)throw new Error('bad');
+      store=o;if(!store.log)store.log=[];
+      load2();save();renderAll();$('bkMsg').textContent='Restored '+store.sheets.length+' sheet(s).';
+    }catch(e){$('bkMsg').textContent='That text is not a valid backup. Nothing was changed.'}
+  };
+  function load2(){
+    if(!store.lib)store.lib=JSON.parse(JSON.stringify(SEED_LIB));
+    ['darkness','tides','kingsport','other'].forEach(function(b){if(!store.lib[b])store.lib[b]=[]});
+    store.sheets.forEach(function(x){if(!x.v)x.v={};if(!x.start)x.start={};if(!x.book)x.book='darkness';x.items=(x.items||[]).map(function(it){return typeof it==='string'?{n:it,t:''}:it})});
+    if(!store.sheets.some(function(x){return x.id===store.cur}))store.cur=store.sheets[0].id;
+  }
   // ---------- init ----------
   load();renderAll();
   if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
