@@ -90,6 +90,10 @@ button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'S
 .libm .le{display:flex;gap:6px;align-items:center;padding:4px 0;border-top:1px solid var(--line)}
 .libm .le span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .libm .le button{min-height:32px;padding:0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{min-height:36px;padding:2px 12px;font-size:15px;border-radius:18px}
+.bmcur{font-size:22px;color:var(--gold);font-weight:700;margin:2px 0 8px}
+.bmcur small{display:block;font-size:12px;color:var(--mute);font-weight:400;font-family:-apple-system,system-ui,sans-serif}
 @media (prefers-reduced-motion:reduce){.die.roll{animation:none}}
 </style>
 </head>
@@ -108,6 +112,20 @@ button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'S
     Tap again to confirm delete: <button id="delYes" class="danger" style="min-height:36px;padding:4px 10px">Delete</button>
     <button id="delNo" style="min-height:36px;padding:4px 10px">Cancel</button>
   </div>
+</section>
+
+<section id="bmsec">
+  <h2>Bookmark</h2>
+  <div class="bmcur" id="bmCur"></div>
+  <div class="row">
+    <input type="text" id="bmSec" placeholder="Section number or keyword">
+    <button class="primary" id="bmSet" style="flex:0 0 auto">Set</button>
+    <button id="bmBack" style="flex:0 0 auto">Back</button>
+  </div>
+  <label class="f" for="bmNote">Where I stopped, next choice, codes</label>
+  <textarea id="bmNote"></textarea>
+  <div class="hint" id="bmTrailLabel"></div>
+  <div class="chips" id="bmTrail"></div>
 </section>
 
 <section>
@@ -291,7 +309,7 @@ button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'S
     ['darkness','tides','kingsport','other'].forEach(function(b){if(!store.ach[b])store.ach[b]=[]});
     if(!store.lib)store.lib=JSON.parse(JSON.stringify(SEED_LIB));
     ['darkness','tides','kingsport','other'].forEach(function(b){if(!store.lib[b])store.lib[b]=[]});
-    store.sheets.forEach(function(x){x.items=(x.items||[]).map(function(it){return typeof it==='string'?{n:it,t:''}:it})});
+    store.sheets.forEach(function(x){x.items=(x.items||[]).map(function(it){return typeof it==='string'?{n:it,t:''}:it});if(!x.bm)x.bm={sec:'',note:'',trail:[],at:0}});
     store.sheets.forEach(function(x){if(!x.book)x.book=(x.adv&&/innsmouth/i.test(x.adv))?'tides':(x.adv&&/kingsport/i.test(x.adv))?'kingsport':'darkness'});
     if(!store.sheets.length){store.sheets.push(blank());store.cur=store.sheets[0].id}
     if(!cur())store.cur=store.sheets[0].id;
@@ -299,7 +317,7 @@ button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'S
   function save(){try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){memOnly=true}}
   function uid(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
   function blank(){
-    var s={id:uid(),inv:'',name:'',book:'darkness',ability:'',weak:'',sitem:'',notes:'',items:[],v:{},start:{}};
+    var s={id:uid(),inv:'',name:'',book:'darkness',bm:{sec:'',note:'',trail:[],at:0},ability:'',weak:'',sitem:'',notes:'',items:[],v:{},start:{}};
     ALLSTATS.forEach(function(a){s.v[a[0]]=0});
     return s;
   }
@@ -382,6 +400,22 @@ button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'S
       w.appendChild(c);w.appendChild(t);w.appendChild(x);h.appendChild(w);
     });
   }
+  function fmtAt(t){if(!t)return '';try{return new Date(t).toLocaleString(undefined,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}catch(e){return ''}}
+  function renderBm(){
+    var b=cur().bm;
+    $('bmCur').innerHTML=b.sec?('Section '+esc(b.sec)+'<small>Saved '+fmtAt(b.at)+'</small>'):'No bookmark yet<small>Enter the section you are on, then tap Set.</small>';
+    $('bmNote').value=b.note||'';autosize($('bmNote'));
+    var t=$('bmTrail');t.innerHTML='';
+    var tr=(b.trail||[]).slice(-12).reverse();
+    $('bmTrailLabel').textContent=tr.length?'Previous sections (tap one to jump back to it):':'';
+    tr.forEach(function(v){var c=document.createElement('button');c.className='chip';c.textContent=v;c.onclick=function(){setSec(v)};t.appendChild(c)});
+  }
+  function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function setSec(v){
+    v=String(v).trim();if(!v)return;var b=cur().bm;
+    if(b.sec&&b.sec!==v){b.trail.push(b.sec);if(b.trail.length>40)b.trail.shift()}
+    b.sec=v;b.at=Date.now();save();$('bmSec').value='';renderBm();
+  }
   function renderItems(){
     var s=cur(),h=$('items');h.innerHTML='';
     s.items.forEach(function(it,i){
@@ -434,7 +468,7 @@ button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'S
       el.style.width=(st>0?Math.max(0,Math.min(100,v/st*100)):0)+'%';
     });
   }
-  function renderAll(){renderTabs();renderFields();renderStats();refreshLib();renderAch();renderItems();renderHist();$('delConfirm').style.display='none';bars();autosizeAll();setTimeout(autosizeAll,60)}
+  function renderAll(){renderTabs();renderFields();renderStats();refreshLib();renderAch();renderBm();renderItems();renderHist();$('delConfirm').style.display='none';bars();autosizeAll();setTimeout(autosizeAll,60)}
 
   // ---------- events ----------
   document.addEventListener('click',function(e){
@@ -539,6 +573,10 @@ button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'S
   $('roll2').onclick=function(){roll(2)};
   $('clearHist').onclick=function(){store.log=[];save();renderHist()};
 
+  $('bmSet').onclick=function(){setSec($('bmSec').value)};
+  $('bmSec').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();setSec($('bmSec').value)}});
+  $('bmBack').onclick=function(){var b=cur().bm;if(!b.trail.length)return;b.sec=b.trail.pop();b.at=Date.now();save();renderBm()};
+  $('bmNote').addEventListener('input',function(){var b=cur().bm;b.note=$('bmNote').value;b.at=Date.now();save()});
   function addAch(){var n=$('achName').value.trim();if(!n)return;achs().push({n:n,d:false});$('achName').value='';save();renderAch()}
   $('achAdd').onclick=addAch;
   $('achName').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addAch()}});
@@ -572,7 +610,7 @@ button,select,.stat .st input,.dock input{font-family:-apple-system,system-ui,'S
     if(!store.lib)store.lib=JSON.parse(JSON.stringify(SEED_LIB));
     if(!store.ach)store.ach={};
     ['darkness','tides','kingsport','other'].forEach(function(b){if(!store.lib[b])store.lib[b]=[];if(!store.ach[b])store.ach[b]=[]});
-    store.sheets.forEach(function(x){if(!x.v)x.v={};if(!x.start)x.start={};if(!x.book)x.book='darkness';x.items=(x.items||[]).map(function(it){return typeof it==='string'?{n:it,t:''}:it})});
+    store.sheets.forEach(function(x){if(!x.v)x.v={};if(!x.start)x.start={};if(!x.book)x.book='darkness';if(!x.bm)x.bm={sec:'',note:'',trail:[],at:0};x.items=(x.items||[]).map(function(it){return typeof it==='string'?{n:it,t:''}:it})});
     if(!store.sheets.some(function(x){return x.id===store.cur}))store.cur=store.sheets[0].id;
   }
   // ---------- init ----------
